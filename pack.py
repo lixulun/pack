@@ -41,6 +41,12 @@ def walkDir(path):
     """
     递归列出指定 path 下的所有文件
     """
+    try:
+        os.listdir(path)
+    except PermissionError:
+        logging.warning("Permission error with '%s' dir, skipped.", path)
+        return
+
     for p in os.listdir(path):
         new_path = os.path.join(path, p)
         if os.path.isdir(new_path):
@@ -58,12 +64,11 @@ def expandPattern(patterns):
     debug(matches)
     return matches
 
-if not os.path.exists("pack"):
-    os.mkdir("pack")
+if not os.path.exists(targetDir):
+    os.mkdir(targetDir)
 
 write2 = rotateFileName(f"{targetDir}/pack{date.today().isoformat()}.zip")
 with ZipFile(write2, mode='w') as zf:
-
     for realFile in filter(lambda x: not matchFileQ(x), walkDir('./')):
         debug("found file: " + realFile)
         info(f"Writing {realFile}...")
